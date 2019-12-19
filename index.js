@@ -1,8 +1,13 @@
 // npm run dev
 // Run the above command in the terminal to start the server.
 const express = require("express");
+const bodyParser = require('body-parser')
 
 const app = express()
+
+// bodyParser is the middleware being called before the callback function being invoked by the routers.
+// Instead of specifying the bodyParser middleware for each route, we use app.use to apply it to all routes
+app.use(bodyParser.urlencoded({extended: true}))
 
 
 // req: incoming information to server from the browser. Use req when receiving information from the user
@@ -19,58 +24,58 @@ app.get("/", (req, res) =>
                 <input name="password" placeholder="password">
                 <input name="passwordConfirmation" placeholder="password confirmation">
                 <button>Sign up</button>
-            </form>
-        </div>
-    `);
-});
-
+                </form>
+                </div>
+                `);
+            });
+            
 // Middleware to be used with the post route logic so that the code is refactored.
+// Need to pass the option {extended: true} to urlencoded method of bodyParser for parsing HTML form data
 // Get access to email, passsword and passwordConfirmation
-const bodyParser = (req, res, next) => 
-{
+// First we defined our own middleware but since it has holes in its implementation we will use bodyParser node module.
+// const bodyParser = (req, res, next) => 
+// {
 
-    if (req.method == 'POST')
-    {
-        //  Under the hood this is how one needs to parse the data sent by the browser
-        req.on('data', data => 
-        {
-            const parsed =  data.toString('utf8').split('&');
-            const formData = {};
+//     if (req.method == 'POST')
+//     {
+//         //  Under the hood this is how one needs to parse the data sent by the browser
+//         req.on('data', data => 
+//         {
+//             const parsed =  data.toString('utf8').split('&');
+//             const formData = {};
 
-            for (let pair of parsed) 
-            {
-                const [key, value] = pair.split('=');
-                formData[key] = value;
-            }
+//             for (let pair of parsed) 
+//             {
+//                 const [key, value] = pair.split('=');
+//                 formData[key] = value;
+//             }
 
-            // Assigning data to the body property of req
-            req.body = formData;
+//             // Assigning data to the body property of req
+//             req.body = formData;
 
-            // Whenever middleware logic is finished running, you need to call next() function 
-            // to let express know it can continue with rest of the routing logic
-            next()
-        });
-    } 
+//             // Whenever middleware logic is finished running, you need to call next() function 
+//             // to let express know it can continue with rest of the routing logic
+//             next()
+//         });
+//     } 
     
-    else 
-    {
-        // Skip this middlware if the request is not a POST method
-        next();
-    }
-};
+//     else 
+//     {
+//         // Skip this middlware if the request is not a POST method
+//         next();
+//     }
+// };
 
-// Post route of the root route, Great for handling data submitted by the user via the above form
-// Browser sends the path and method to server first, server runs the appropriate callback, then chunk by chunk
+// Post route of the root rout method to server first, server runs the appropriate callback, then chunk by chunk
 // the browser sends the rest of the information to the server while receiving confirmation of each chunk
-// bodyParser is the middleware being called before the callback function being invoked by the router below.
-app.post('/', bodyParser,(req, res) => 
+app.post('/',(req, res) => 
 {
     console.log(req.body)
     res.send("Account Created!")
 });
 
 // Need to start a server and listen on a port (3000 here) to access the routes above
-app.listen(3000, () => 
+app.listen(3001, () => 
 {
     console.log("listening");
 });
