@@ -1,16 +1,24 @@
 {
-    "name": "ecommerce_website",
-    "version": "1.0.0",
-    "description": "",
-    "scripts": {
-        "dev": "nodemon index.js"
-    },
-    "keywords": [],
-    "author": {"name": "Ali"},
-    "license": "ISC",
-    "dependencies": {
-        "express": "^4.17.1",
-        "nodemon": "^1.19.4"
-    }
-    
+  "name": "ecommerce_website",
+  "version": "1.0.0",
+  "description": "A node.js eCommerce website with authorization and authentication built with MongoDB",
+  "scripts": {
+    "dev": "nodemon index.js"
+  },
+  "keywords": [],
+  "author": "Ali",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.17.1",
+    "nodemon": "^1.19.4"
+  },
+  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Ali-Parandeh/ecommerce_website.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Ali-Parandeh/ecommerce_website/issues"
+  },
+  "homepage": "https://github.com/Ali-Parandeh/ecommerce_website#readme"
 }
