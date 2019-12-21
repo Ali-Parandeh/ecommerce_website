@@ -1,2 +1,3 @@
 # ecommerce_website
-A node.js eCommerce website with authorization and authentication built with MongoDB
+An eCommerce web application built with data persistency, authorisation and authentication using Node.js, express and a home-brewed NoSQL database
+
