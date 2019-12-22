@@ -1,9 +1,12 @@
 const fs = require('fs');
 const crypto = require('crypto');
+const util = require('util');
+
+const scrypt = util.promisify(crypto.scrypt);
 
 class UsersRepository 
 {
-    // WARNING: The repository methods implemented below are inefficient as they grab the whole database, manipulate it,
+    // NOTE: The repository methods implemented below are inefficient as they grab the whole database, manipulate it,
     // then overwrite the database JSON file. They also implement iterators which must be avoided in production code.
     constructor(filename)
     {
@@ -37,12 +40,34 @@ class UsersRepository
 
     async create(attrs)
     {
+        // attrs === {email: '', password: ''}
         attrs.id = this.randomId();
+
+        const salt = crypto.randomBytes(8).toString('hex');
+
+        // NOTE: The crypto.scrypt hasing function requires a callback to work. This means
+        // we need to provide all the code within this callback to have acccess to 'hashed' variable.
+        // Instead we use node.js core utils function to promisify the hashing function below.
+        // crypto.scrypt(attrs.password, salt, 64, (err, buf) => 
+        // {
+        //     const hashed = buf.toString('hex');
+        // });
+
+        const buf = await scrypt(attrs.password, salt, 64);
+
         const records = await this.getAll();
-        records.push(attrs);
+        const record = {
+            // Create a new object, take the properties of attrs then 
+            // overwrite the existing value of password key with the given password value
+            ...attrs, 
+            password: `${buf.toString('hex')}.${salt}`
+        };
+
+        records.push(record);
+
         await this.writeAll(records);
 
-        return attrs;
+        return record;
 
     }
     
@@ -116,10 +141,22 @@ class UsersRepository
         }
     }
 
+    async comparePasswords(saved, supplied)
+    {
+        // Saved -> password saved in our database 'hashed.salt'
+        // supplied -> password given to us by the user trying to sign in
+        const [hashed, salt] = saved.split('.');
+        const hashedSupplied = await scrypt(supplied, salt, 64);
+
+        return hashed === hashedSupplied;
+        
+    }
+
     randomId()
     {
         return crypto.randomBytes(4).toString('hex');
     }
+
 }
 
 // const test = async () => 
