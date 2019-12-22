@@ -2,6 +2,7 @@
 // Run the above command in the terminal to start the server.
 const express = require("express");
 const bodyParser = require('body-parser')
+const usersRepo = require('./repositories/users');
 
 const app = express()
 
@@ -68,10 +69,26 @@ app.get("/", (req, res) =>
 
 // Post route of the root rout method to server first, server runs the appropriate callback, then chunk by chunk
 // the browser sends the rest of the information to the server while receiving confirmation of each chunk
-app.post('/',(req, res) => 
+app.post('/', async (req, res) => 
 {
-    console.log(req.body)
-    res.send("Account Created!")
+    const {email, password, passwordConfirmation} = req.body;
+
+    // Checking whether a user already exists in the database.
+    // Note: Can use usersRepo.getOneBy({email}) instead of usersRepo.getOneBy({email: email}) as key & value are identical
+    // Note: Anywhere 'await' keyword is used in a function, the enclosing functions needs to be labled 'async'.
+    const existingUser = await usersRepo.getOneBy({email});
+
+    if (existingUser)
+    {
+        return res.send('Email is in use');
+    }
+
+    if (password !== passwordConfirmation)
+    {
+        return res.send('Passwords must match');
+    }
+
+    res.send('Account Created');
 });
 
 // Need to start a server and listen on a port (3000 here) to access the routes above
