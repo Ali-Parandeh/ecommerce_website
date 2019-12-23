@@ -1,6 +1,10 @@
 const express = require('express');
 const usersRepo = require('../../repositories/users');
 
+// Importing templates - These need to be called.
+const signupTemplate = require('../../views/admin/auth/signup');
+const signinTemplate = require('../../views/admin/auth/signin');
+
 //  router is used for sub-routing (packaging) our routes.
 const router = express.Router();
 
@@ -11,18 +15,8 @@ router.get("/signup", (req, res) =>
 {
     // You can send a piece of text that is html using `` which will be rendered by the browser.
     // Note: The default method for form submission is GET so you need to overwrite this with a POST request.
-    res.send(`
-        <div>
-            Your id is: ${req.session.userId}
-            <form method="POST">
-                <input name="email" placeholder="email">
-                <input name="password" placeholder="password">
-                <input name="passwordConfirmation" placeholder="password confirmation">
-                <button>Sign up</button>
-                </form>
-                </div>
-                `);
-            });
+    res.send(signupTemplate({req}));
+});
             
 
 // Post route of the root rout method to server first, server runs the appropriate callback, then chunk by chunk
@@ -66,15 +60,7 @@ router.get('/signout', (req, res) =>
 // Sign in route (GET)
 router.get('/signin', (req, res) => 
 {
-    res.send(`
-    <div>
-        <form method="POST">
-            <input name="email" placeholder="email">
-            <input name="password" placeholder="password">
-            <button>Sign in</button>
-        </form>
-    </div> 
-    `);
+    res.send(signinTemplate());
 });
 
 // Sign in route (POST)
