@@ -2,7 +2,7 @@ const express = require("express");
 const usersRepo = require("../../repositories/users");
 
 // Grab on the check function from object returned.
-const { check } = require("express-validator");
+const { check, validationResult } = require("express-validator");
 
 // Importing templates - These need to be called.
 const signupTemplate = require("../../views/admin/auth/signup");
@@ -20,20 +20,27 @@ router.get("/signup", (req, res) => {
   res.send(signupTemplate({ req }));
 });
 
-// Post route of the root rout method to server first, server runs the appropriate callback, then chunk by chunk
+// Post route of the root route method to server first, server runs the appropriate callback, then chunk by chunk
 // the browser sends the rest of the information to the server while receiving confirmation of each chunk
 router.post(
   "/signup",
   [
     check("email")
       .trim()
+      .normalizeEmail() // 
       .isEmail(),
-    check("password").trim(),
-    check("passwordConfirmation").trim()
+    check("password")
+      .trim()
+      .isLength({ min: 4, max: 20 }),
+    check("passwordConfirmation")
+      .trim()
+      .isLength({ min: 4, max: 20 })
   ],
 
   async (req, res) => {
     const { email, password, passwordConfirmation } = req.body;
+    const errors = validationResult(req);
+    console.log(errors);
 
     // Checking whether a user already exists in the database.
     // Note: Can use usersRepo.getOneBy({email}) instead of usersRepo.getOneBy({email: email}) as key & value are identical
