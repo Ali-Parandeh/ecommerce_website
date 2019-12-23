@@ -1,9 +1,9 @@
-const layout = require('../layout');
+const layout = require("../layout");
 
 // Exporting template with req object. {req} destructures the argument.
-module.exports = ({req})=> 
-{
-    return layout({content:`        
+module.exports = ({ req }) => {
+  return layout({
+    content: `        
         <div>
             Your id is: ${req.session.userId}
             <form method="POST">
@@ -13,5 +13,6 @@ module.exports = ({req})=>
                 <button>Sign up</button>
             </form>
         </div>
-    `});
-}
+    `
+  });
+};

@@ -1,6 +1,5 @@
-module.exports = ({content}) =>
-{
-    return `
+module.exports = ({ content }) => {
+  return `
         <!DOCTYPE hmtl>
         <html>
             <head>

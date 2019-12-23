@@ -1,165 +1,140 @@
-const fs = require('fs');
-const crypto = require('crypto');
-const util = require('util');
+const fs = require("fs");
+const crypto = require("crypto");
+const util = require("util");
 
 const scrypt = util.promisify(crypto.scrypt);
 
-class UsersRepository 
-{
-    // NOTE: The repository methods implemented below are inefficient as they grab the whole database, manipulate it,
-    // then overwrite the database JSON file. They also implement iterators which must be avoided in production code.
-    constructor(filename)
-    {
-        if(!filename)
-        {
-            throw new Error('Creating a repository requires a filename')
-        }
-
-        this.filename = filename;
-
-        try 
-        {
-            fs.accessSync(this.filename);
-        }
-        catch(err)
-        {
-            fs.writeFileSync(this.filename, '[]');
-        }
-
-    } 
-
-    async getAll()
-    {
-        return JSON.parse(
-            await fs.promises.readFile(
-                this.filename, 
-                {encoding : 'utf8'}
-                )
-        );
+class UsersRepository {
+  // NOTE: The repository methods implemented below are inefficient as they grab the whole database, manipulate it,
+  // then overwrite the database JSON file. They also implement iterators which must be avoided in production code.
+  constructor(filename) {
+    if (!filename) {
+      throw new Error("Creating a repository requires a filename");
     }
 
-    async create(attrs)
-    {
-        // attrs === {email: '', password: ''}
-        attrs.id = this.randomId();
+    this.filename = filename;
 
-        const salt = crypto.randomBytes(8).toString('hex');
+    try {
+      fs.accessSync(this.filename);
+    } catch (err) {
+      fs.writeFileSync(this.filename, "[]");
+    }
+  }
 
-        // NOTE: The crypto.scrypt hasing function requires a callback to work. This means
-        // we need to provide all the code within this callback to have acccess to 'hashed' variable.
-        // Instead we use node.js core utils function to promisify the hashing function below.
-        // crypto.scrypt(attrs.password, salt, 64, (err, buf) => 
-        // {
-        //     const hashed = buf.toString('hex');
-        // });
+  async getAll() {
+    return JSON.parse(
+      await fs.promises.readFile(this.filename, { encoding: "utf8" })
+    );
+  }
 
-        const buf = await scrypt(attrs.password, salt, 64);
+  async create(attrs) {
+    // attrs === {email: '', password: ''}
+    attrs.id = this.randomId();
 
-        const records = await this.getAll();
-        const record = {
-            // Create a new object, take the properties of attrs then 
-            // overwrite the existing value of password key with the given password value
-            ...attrs, 
-            password: `${buf.toString('hex')}.${salt}`
-        };
+    const salt = crypto.randomBytes(8).toString("hex");
 
-        records.push(record);
+    // NOTE: The crypto.scrypt hasing function requires a callback to work. This means
+    // we need to provide all the code within this callback to have acccess to 'hashed' variable.
+    // Instead we use node.js core utils function to promisify the hashing function below.
+    // crypto.scrypt(attrs.password, salt, 64, (err, buf) =>
+    // {
+    //     const hashed = buf.toString('hex');
+    // });
 
-        await this.writeAll(records);
+    const buf = await scrypt(attrs.password, salt, 64);
 
+    const records = await this.getAll();
+    const record = {
+      // Create a new object, take the properties of attrs then
+      // overwrite the existing value of password key with the given password value
+      ...attrs,
+      password: `${buf.toString("hex")}.${salt}`
+    };
+
+    records.push(record);
+
+    await this.writeAll(records);
+
+    return record;
+  }
+
+  async writeAll(records) {
+    // Write updated records back to this.filename.
+    // Options passed in to JSON.stringify are replacer and spacers.
+    // These options are passed in to prettify the ourput json file.
+
+    await fs.promises.writeFile(
+      this.filename,
+      JSON.stringify(records, null, 2)
+    );
+  }
+
+  async getOne(id) {
+    // No need to check if id exists or not as it's up to the developer using this
+    // method to perform his checks. The purpose of this method is to return an id
+    // in the database if id exists.
+
+    const records = await this.getAll();
+    return records.find(record => record.id === id);
+  }
+
+  async delete(id) {
+    const records = await this.getAll();
+    const filteredRecords = records.filter(record => record.id !== id);
+    await this.writeAll(filteredRecords);
+  }
+
+  async update(id, attrs) {
+    const records = await this.getAll();
+    const record = records.find(record => record.id === id);
+
+    if (!record) {
+      throw new Error(`Record with id ${id} not found`);
+    }
+
+    // const record = {email: 'test@test.com'}
+    // const attrs = {password: 'myPassword'}
+    // Object.assign updates the record with new attributes
+    Object.assign(record, attrs);
+    // const record = {email: 'test@test.com', password: 'myPassword'}
+
+    return await this.writeAll(records);
+  }
+
+  async getOneBy(filters) {
+    // This is a very rudimentary and inefficient code O(N^2). This is not a production ready filtering method
+    const records = await this.getAll();
+
+    for (let record of records) {
+      let found = true;
+
+      for (let key in filters) {
+        if (filters[key] !== record[key]) {
+          found = false;
+        }
+      }
+
+      if (found) {
         return record;
-
+      }
     }
-    
-    async writeAll(records)
-    {
-        // Write updated records back to this.filename. 
-        // Options passed in to JSON.stringify are replacer and spacers.
-        // These options are passed in to prettify the ourput json file.
+  }
 
-        await fs.promises.writeFile(this.filename, JSON.stringify(records, null, 2));
-    }
+  async comparePasswords(saved, supplied) {
+    // Saved -> password saved in our database 'hashed.salt'
+    // supplied -> password given to us by the user trying to sign in
+    const [hashed, salt] = saved.split(".");
+    const hashedSuppliedBuf = await scrypt(supplied, salt, 64);
 
-    async getOne(id)
-    {
-        // No need to check if id exists or not as it's up to the developer using this
-        // method to perform his checks. The purpose of this method is to return an id
-        // in the database if id exists.
+    return hashed === hashedSuppliedBuf.toString("hex");
+  }
 
-        const records = await this.getAll();
-        return records.find(record => record.id === id);
-
-    }
-
-    async delete(id)
-    {
-        const records = await this.getAll();
-        const filteredRecords = records.filter(record => record.id !== id);
-        await this.writeAll(filteredRecords);
-    }
-
-    async update(id, attrs)
-    {
-        const records = await this.getAll();
-        const record = records.find(record => record.id === id);
-
-        if(!record)
-        {
-            throw new Error(`Record with id ${id} not found`);
-        }
-
-        // const record = {email: 'test@test.com'}
-        // const attrs = {password: 'myPassword'}
-        // Object.assign updates the record with new attributes
-        Object.assign(record, attrs);
-        // const record = {email: 'test@test.com', password: 'myPassword'}
-
-        return await this.writeAll(records);
-    }
-
-    async getOneBy(filters)
-    {
-        // This is a very rudimentary and inefficient code O(N^2). This is not a production ready filtering method
-        const records = await this.getAll();
-
-        for (let record of records)
-        {
-            let found = true;
-
-            for (let key in filters)
-            {
-                if (filters[key] !== record[key])
-                {
-                    found = false;
-                }
-            }
-
-            if (found)
-            {
-                return record;
-            }
-        }
-    }
-
-    async comparePasswords(saved, supplied)
-    {
-        // Saved -> password saved in our database 'hashed.salt'
-        // supplied -> password given to us by the user trying to sign in
-        const [hashed, salt] = saved.split('.');
-        const hashedSuppliedBuf = await scrypt(supplied, salt, 64);
-
-        return hashed === hashedSuppliedBuf.toString('hex');
-        
-    }
-
-    randomId()
-    {
-        return crypto.randomBytes(4).toString('hex');
-    }
-
+  randomId() {
+    return crypto.randomBytes(4).toString("hex");
+  }
 }
 
-// const test = async () => 
+// const test = async () =>
 // {
 //     const repo = new UsersRepository('users.json');
 //     // await repo.create({email: 'testing@test.com', passowrd: 'goodPassword'});
@@ -176,4 +151,4 @@ class UsersRepository
 
 // test()
 
-module.exports = new UsersRepository('users.json');
+module.exports = new UsersRepository("users.json");
