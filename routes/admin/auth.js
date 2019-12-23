@@ -1,10 +1,13 @@
+const express = require('express');
 const usersRepo = require('../../repositories/users');
 
+//  router is used for sub-routing (packaging) our routes.
+const router = express.Router();
 
 // req: incoming information to server from the browser. Use req when receiving information from the user
 // res: outgoing response from the server to the browser. Use res to send info back to the user or interact with the browser.
 // Listen for GET requests on the root route (/)
-app.get("/signup", (req, res) => 
+router.get("/signup", (req, res) => 
 {
     // You can send a piece of text that is html using `` which will be rendered by the browser.
     // Note: The default method for form submission is GET so you need to overwrite this with a POST request.
@@ -24,7 +27,7 @@ app.get("/signup", (req, res) =>
 
 // Post route of the root rout method to server first, server runs the appropriate callback, then chunk by chunk
 // the browser sends the rest of the information to the server while receiving confirmation of each chunk
-app.post('/signup', async (req, res) => 
+router.post('/signup', async (req, res) => 
 {
     const {email, password, passwordConfirmation} = req.body;
 
@@ -54,14 +57,14 @@ app.post('/signup', async (req, res) =>
 });
 
 // Sign out route
-app.get('/signout', (req, res) => 
+router.get('/signout', (req, res) => 
 {
     req.session = null
     res.send('You are logged out!');
 });
 
 // Sign in route (GET)
-app.get('/signin', (req, res) => 
+router.get('/signin', (req, res) => 
 {
     res.send(`
     <div>
@@ -75,7 +78,7 @@ app.get('/signin', (req, res) =>
 });
 
 // Sign in route (POST)
-app.post('/signin', async (req, res) => 
+router.post('/signin', async (req, res) => 
 {
     const {email, password} = req.body;
     const user = await usersRepo.getOneBy({email});
@@ -97,3 +100,5 @@ app.post('/signin', async (req, res) =>
     res.send('You are signed in!');
 
 });
+
+module.exports = router;

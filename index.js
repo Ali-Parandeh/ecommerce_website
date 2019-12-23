@@ -2,10 +2,10 @@
 // Run the above command in the terminal to start the server.
 const express = require("express");
 const bodyParser = require('body-parser');
-const cookieSession = require('cookie-session')
-const usersRepo = require('./repositories/users');
+const cookieSession = require('cookie-session');
+const authRouter = require('./routes/admin/auth');
 
-const app = express()
+const app = express();
 
 // bodyParser is the middleware being called before the callback function being invoked by the routers.
 // Instead of specifying the bodyParser middleware for each route, we use app.use to apply it to all routes.
