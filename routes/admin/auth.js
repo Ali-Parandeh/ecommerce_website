@@ -36,7 +36,7 @@ router.post(
     const { email, password, passwordConfirmation } = req.body;
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-      res.send(signupTemplate({ req }, errors));
+      return res.send(signupTemplate({ req }, errors));
     }
     // Create a user in the user repo to represent our user
     // Note: keys and values are identical so can shortern the code as below.
