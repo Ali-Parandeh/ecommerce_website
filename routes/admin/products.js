@@ -5,9 +5,9 @@ const productsRepo = require("../../repositories/products");
 const productsNewTemplate = require("../../views/admin/products/new");
 const { requireTitle, requirePrice } = require("./validators");
 const multer = require("multer");
+const upload = multer({ storage: multer.memoryStorage() });
 
 router.get("/admin/products", (req, res) => {});
-const upload = multer({ storage: multer.memoryStorage() });
 
 router.get("/admin/products/new", (req, res) => {
   res.send(productsNewTemplate({}));
