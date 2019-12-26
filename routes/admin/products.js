@@ -7,15 +7,23 @@ const { validationResult } = require("express-validator");
 const multer = require("multer");
 
 router.get("/admin/products", (req, res) => {});
+const upload = multer({ storage: multer.memoryStorage() });
 
 router.get("/admin/products/new", (req, res) => {
   res.send(productsNewTemplate({}));
 });
 
-router.post("/admin/products/new", [requireTitle, requirePrice], (req, res) => {
-  const errors = validationResult(req);
+router.post(
+  "/admin/products/new",
+  [requireTitle, requirePrice],
+  upload.single("image"),
+  (req, res) => {
+    const errors = validationResult(req);
 
-  res.send("Submitted");
-});
+    console.log(req.file);
+
+    res.send("Submitted");
+  }
+);
 
 module.exports = router;
