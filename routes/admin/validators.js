@@ -2,15 +2,23 @@ const { check } = require("express-validator");
 const usersRepo = require("../../repositories/users");
 
 module.exports = {
+  requireTitle: check("title")
+    .trim()
+    .isLength({ min: 5, max: 40 }),
+  requirePrice: check("price")
+    .trim()
+    // NOTE: The server always receives the price as a string from the client browser so needs to be converted to a float.
+    .toFloat()
+    .isFloat({ min: 1 }),
   requireEmail: check("email")
     .trim()
-    .normalizeEmail() //
+    .normalizeEmail()
     .isEmail()
     .withMessage("Must be a valid email")
     .custom(async email => {
       // Checking whether a user already exists in the database.
-      // Note: Can use usersRepo.getOneBy({email}) instead of usersRepo.getOneBy({email: email}) as key & value are identical
-      // Note: Anywhere 'await' keyword is used in a function, the enclosing functions needs to be labled 'async'.
+      // NOTE: Can use usersRepo.getOneBy({email}) instead of usersRepo.getOneBy({email: email}) as key & value are identical
+      // NOTE: Anywhere 'await' keyword is used in a function, the enclosing functions needs to be labled 'async'.
       const existingUser = await usersRepo.getOneBy({ email });
       if (existingUser) {
         throw new Error("Email is already in use");
