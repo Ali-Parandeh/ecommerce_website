@@ -14,6 +14,7 @@ app.use(express.static("public"));
 
 // bodyParser is the middleware being called before the callback function being invoked by the routers.
 // Instead of specifying the bodyParser middleware for each route, we use app.use to apply it to all routes.
+// NOTE: Only works with default forms.
 app.use(bodyParser.urlencoded({ extended: true }));
 
 // CookieSession is a middleware like BodyParser. To use it in all routes, we can use app.use
