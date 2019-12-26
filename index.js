@@ -1,5 +1,5 @@
 // npm run dev
-// Run the above command in the terminal to start the server.
+// NOTE: Run the above command in the terminal to start the server.
 const express = require("express");
 const bodyParser = require("body-parser");
 const cookieSession = require("cookie-session");
@@ -8,6 +8,7 @@ const productsRouter = require("./routes/admin/products");
 
 const app = express();
 
+// NOTE: The order of middlwares passed to the app.use below matters.
 // Create a new middleware function to serve files from within a given root directory.
 // The file to serve will be determined by combining req.url with the provided root directory.
 app.use(express.static("public"));
