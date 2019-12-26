@@ -21,8 +21,9 @@ app.use(bodyParser.urlencoded({ extended: true }));
 // Note: CookieSession library adds an additional property to the req object passed in to routes below - req.session.
 app.use(cookieSession({ keys: ["kjdhasjdhajskhd"] }));
 
-// Need to use the router
+// Need to use the routers
 app.use(authRouter);
+app.use(productsRouter);
 
 // Need to start a server and listen on a port (3000 here) to access the routes above
 app.listen(3001, () => {
