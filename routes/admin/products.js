@@ -15,7 +15,10 @@ router.get("/admin/products/new", (req, res) => {
 
 /* 
 NOTE: 
-The order of middlewares used in the post router below matters! We need to encode image to base64 first then encode form title & price.
+The multer middlware takes care of all parsing (text fields and images) so bodyparser is no longer used.admin
+If the validation middlware is used before multer is called, it will not receive the parsed request and will throw an error.
+Therefore, the order of middlewares used in the post router below matters! 
+We need to encode image to base64 first then encode form title & price.
 The post router below make use of all middlewares passed to app.use in index.js first then executes rest of the middlewares below.
  */
 router.post(
