@@ -13,14 +13,26 @@ router.get("/admin/products/new", (req, res) => {
   res.send(productsNewTemplate({}));
 });
 
+/* 
+NOTE: 
+The order of middlewares used in the post router below matters! We need to encode image to base64 first then encode form title & price.
+The post router below make use of all middlewares passed to app.use in index.js first then executes rest of the middlewares below.
+ */
 router.post(
   "/admin/products/new",
-  [requireTitle, requirePrice],
   upload.single("image"),
-  (req, res) => {
+  [requireTitle, requirePrice],
+  async (req, res) => {
     const errors = validationResult(req);
 
-    console.log(req.file);
+    if (!errors.isEmpty()) {
+      return res.send(productsNewTemplate({ errors }));
+    }
+    // NOTE: Base64 represents the string encoding for images.
+    const image = req.file.buffer.toString("base64");
+    const { title, price } = req.body;
+
+    await productsRepo.create({ title, price, image });
 
     res.send("Submitted");
   }
