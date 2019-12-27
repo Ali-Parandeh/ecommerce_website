@@ -1,5 +1,7 @@
 const layout = require("../layout");
 
+// NOTE: Form elements only accept GET and POST requests upon submission so cannot use form elements to make DELETE/PUT requests.
+// NOTE: Value provided to the form action attribute is the url that the form is submitting the POST request to.
 module.exports = ({ products }) => {
   const renderedProducts = products
     .map(product => {
@@ -15,7 +17,9 @@ module.exports = ({ products }) => {
           </a>
         </td>
         <td>
-          <button class="button is-danger">Delete</button>
+          <form method="POST" action="/admin/products/${product.id}/delete">
+            <button class="button is-danger">Delete</button>
+          </form>
         </td>
       </tr>
     `;
