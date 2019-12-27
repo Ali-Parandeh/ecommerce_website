@@ -1,5 +1,6 @@
 const layout = require("../layout");
 
+// NOTE: form action defines where the browser will submit the form data to.
 module.exports = ({ products }) => {
   const renderedProducts = products
     .map(product => {
@@ -15,6 +16,7 @@ module.exports = ({ products }) => {
             </div>
             <footer class="card-footer">
               <form action="/cart/products" method="POST">
+                <input hidden value="${product.id}" name="productId" />
                 <button class="button has-icon is-inverted">
                   <i class="fa fa-shopping-cart"></i> Add to cart
                 </button>
