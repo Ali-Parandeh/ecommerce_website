@@ -4,7 +4,8 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const cookieSession = require("cookie-session");
 const authRouter = require("./routes/admin/auth");
-const productsRouter = require("./routes/admin/products");
+const adminProductsRouter = require("./routes/admin/products");
+const productsRouter = require("./routes/products");
 
 const app = express();
 
@@ -25,6 +26,7 @@ app.use(cookieSession({ keys: ["kjdhasjdhajskhd"] }));
 
 // Need to use the routers
 app.use(authRouter);
+app.use(adminProductsRouter);
 app.use(productsRouter);
 
 // Need to start a server and listen on a port (3000 here) to access the routes above
